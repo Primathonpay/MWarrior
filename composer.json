@@ -20,7 +20,7 @@
     "magento/module-quote": "100.1.*",
     "magento/module-checkout": "100.1.*",
     "magento/module-payment": "100.1.*",
-    "primathonpay/mwarrior-api-php": "1.2.0"
+    "primathonpay/mwarrior-api-php": "dev"
   },
   "autoload": {
     "files": [ "registration.php" ],

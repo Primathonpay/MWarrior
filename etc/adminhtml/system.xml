@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!--
+Copyright (C) 2017 primathon
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+@author      primathon
+@copyright   2017 primathon
+@license     http://opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2 (GPL-2.0)
+-->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="payment">
+            <group id="Primathonpay_MWarrior_init" translate="label" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                <frontend_model>Primathonpay\MWarrior\Block\Adminhtml\System\Config\Fieldset\Init</frontend_model>
+            </group>
+            <group id="Primathonpay_MWarrior" translate="label comment" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>mwarrior</label>
+                <fieldset_css>complex</fieldset_css>
+                <comment>Accept payments through mwarrior payment</comment>
+                <include path="Primathonpay_MWarrior::system/method_checkout.xml"/>
+            </group>
+        </section>
+    </system>
+</config>

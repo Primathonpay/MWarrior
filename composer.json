@@ -2,7 +2,7 @@
   "name": "primathonpay/mwarrior-token-payment",
   "description": "Primathonpay MWarrior token payment",
   "type": "magento2-module",
-  "version": "1.4.0",
+  "version": "1.7.0",
   "minimum-stability" : "dev",
   "prefer-stable" : true,
   "license": [

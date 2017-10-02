@@ -17,7 +17,7 @@
  * @license     http://opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2 (GPL-2.0)
  */
 
-namespace Primathonpay\Primathonpay\Model;
+namespace Primathonpay\MWarrior\Model;
 
 use Magento\Store\Model\ScopeInterface;
 
@@ -68,9 +68,9 @@ class Config implements \Magento\Payment\Model\Method\ConfigInterface
      */
     public function initGatewayClient()
     {
-        \mwarrior\Settings::$merchantUUID  = $this->getMerchantUUID();
-        \mwarrior\Settings::$apikey = $this->getApiKey();
-        \mwarrior\Settings::$gatewayBase = 'https://' . $this->getDomainGateway();
+        \primathonpay\Settings::$merchantUUID  = $this->getMerchantUUID();
+        \primathonpay\Settings::$apikey = $this->getApiKey();
+        \primathonpay\Settings::$gatewayBase = 'https://' . $this->getDomainGateway();
     }
 
     /**

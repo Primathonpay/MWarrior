@@ -33,7 +33,7 @@ class SalesOrderPaymentPlaceEnd implements ObserverInterface
      */
     protected $_storeManager;
     /**
-     * @var \Primathonpay\Primathonpay\Helper\Data
+     * @var \Primathonpay\MWarrior\Helper\Data
      */
     protected $_moduleHelper;
 

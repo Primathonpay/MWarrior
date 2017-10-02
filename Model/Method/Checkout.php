@@ -635,8 +635,8 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
         }
 
         // Generate & return the hash
-        $passphrase = Settings::$apiPubKey;
-        $merchantUUID = Settings::$merchantUUID;
+        $passphrase = $this->getConfigData('api_passphrase');
+        $merchantUUID = $this->getConfigData('merchant_id');
         
         return md5(strtolower($passphrase . $merchantUUID . $postData['transactionAmount'] . $postData['transactionCurrency']));
     }

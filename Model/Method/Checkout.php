@@ -17,8 +17,8 @@
  * @license     http://opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2 (GPL-2.0)
  */
 
-namespace Primathonpay\Primathonpay\Model\Method;
-use mwarrior\Settings;
+namespace Primathonpay\MWarrior\Model\Method;
+use mWarrior\Settings;
 use Magento\Framework\DataObject;
 use Magento\Payment\Model\InfoInterface;
 use Magento\Quote\Api\Data\PaymentInterface;
@@ -72,7 +72,7 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
      * @param \Magento\Payment\Model\Method\Logger $logger
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Checkout\Model\Session $checkoutSession
-     * @param \Primathonpay\Primathonpay\Helper\Data $moduleHelper
+     * @param \Primathonpay\MWarrior\Helper\Data $moduleHelper
      * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null $resource
      * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection
      * @param array $data
@@ -88,7 +88,7 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
         \Magento\Payment\Model\Method\Logger  $logger,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Checkout\Model\Session $checkoutSession,
-        \Primathonpay\Primathonpay\Helper\Data $moduleHelper,
+        \Primathonpay\MWarrior\Helper\Data $moduleHelper,
         \Magento\Catalog\Model\ProductFactory $productFactory,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
@@ -199,11 +199,11 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
 
     public function checkout($data)
     {
-        $transaction = new \mwarrior\Addcard;
+        $transaction = new \primathonpay\AddCard();  // mwarrior/Addcard;
 
         $transaction->setMerchantUUID($data['merchantUUID']);
         $transaction->setApiKey($data['apiKey']);
-        $transaction->setCardHolder($data['cardName']);
+        $transaction->setCcOwner($data['cardName']);
         $transaction->setCardNumber($data['cardNumber']);
         $transaction->setCardExpMonth($data['cardExpiryMonth']);
         $transaction->setCardExpYear($data['cardExpiryYear']);
@@ -281,12 +281,14 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
         $order = $payment->getOrder();
         $helper = $this->getModuleHelper();
 
+        $this->transactionID = '';
+
         $orderId = ltrim(
             $order->getIncrementId(),
             '0'
         );
 
-        $cardName = null;
+        $cardHolderName = null;
 
         $billing = $order->getBillingAddress();
         if (empty($billing)) {
@@ -301,17 +303,23 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
             $ccExpMonth = $payment->getCcExpMonth();
         }
 
+        if (!empty($payment->getCcOwner())) {
+          $cardHolderName = $payment->getCcOwner();
+        } else {
+          $cardHolderName = $billing->getFirstname();
+        }
+
         $data = [
             'method' => $helper::ADDCARD,
-            'merchantUUID' => Settings::$merchantUUID,
-            'apiKey' => Settings::$apiKey,
-            'cardName'=>  $billing->getFirstname(),
+            'merchantUUID' => $this->getConfigData('merchant_id'),
+            'apiKey' => $this->getConfigData('api_key'),
+            'cardName'=>  $cardHolderName,
             'cardNumber' => $payment->getCcNumber(),
             'cardExpiryMonth' => $ccExpMonth,
             'cardExpiryYear' => $payment->getCcExpYear()
         ];
 
-        $this->getConfigHelper()->initGatewayClient();
+//        $this->getConfigHelper()->initGatewayClient();
 
         try {
 
@@ -324,11 +332,8 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
             $mwarrior_response = $this->getModuleHelper()->getArrayFromGatewayResponse(
                 $this->getMWarriorResponse()
             );
-            
-             $payment
-            ->setCcTransId(
-                $responseObject['transactionID']
-            )
+		
+            $payment
             ->setCcNumberEnc(
                 $responseObject['responseData']['cardNumber']
             )
@@ -378,8 +383,8 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
         
         $postData = [
             'method' => 'processCard',
-            'merchantUUID' => Settings::$merchantUUID,
-            'apiKey' => Settings::$apiKey,
+            'merchantUUID' => $this->getConfigData('merchant_id'),
+            'apiKey' => $this->getConfigData('api_key'),
             'transactionAmount' => sprintf("%.2f",$order->getGrandTotal()),
             'transactionCurrency' => 'AUD',
             'transactionProduct' => '$FOH-00100503',
@@ -395,7 +400,7 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
         ];
         array_push($postData,['hash' => $this->getHash($postData)]);
 
-         $this->getConfigHelper()->initGatewayClient();
+//         $this->getConfigHelper()->initGatewayClient();
         
         try {
 
@@ -446,7 +451,7 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
 
      public function processCard($data)
     {
-        $transaction = new \mwarrior\Payment;
+        $transaction = new \primathonpay\Payment;
 
         $transaction->setMerchantUUID($data['merchantUUID']);
         $transaction->setApiKey($data['apiKey']);

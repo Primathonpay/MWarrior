@@ -17,21 +17,21 @@
  * @license     http://opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2 (GPL-2.0)
  */
 
-namespace Primathonpay\Primathonpay\Model\Traits;
+namespace Primathonpay\MWarrior\Model\Traits;
 
 /**
  * Trait for defining common variables and methods for all Payment Solutions
  * Trait OnlinePaymentMethod
- * @package Primathonpay\Primathonpay\Model\Traits
+ * @package Primathonpay\MWarrior\Model\Traits
  */
 trait OnlinePaymentMethod
 {
     /**
-     * @var \Primathonpay\Primathonpay\Model\Config
+     * @var \Primathonpay\MWarrior\Model\Config
      */
     protected $_configHelper;
     /**
-     * @var \Primathonpay\Primathonpay\Helper\Data
+     * @var \Primathonpay\MWarrior\Helper\Data
      */
     protected $_moduleHelper;
     /**
@@ -57,7 +57,7 @@ trait OnlinePaymentMethod
 
     /**
      * Get an Instance of the Config Helper Object
-     * @return \Primathonpay\Primathonpay\Model\Config
+     * @return \Primathonpay\MWarrior\Model\Config
      */
     protected function getConfigHelper()
     {
@@ -66,7 +66,7 @@ trait OnlinePaymentMethod
 
     /**
      * Get an Instance of the Module Helper Object
-     * @return \Primathonpay\Primathonpay\Helper\Data
+     * @return \Primathonpay\MWarrior\Helper\Data
      */
     protected function getModuleHelper()
     {

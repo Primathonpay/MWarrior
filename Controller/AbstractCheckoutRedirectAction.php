@@ -38,7 +38,7 @@ abstract class AbstractCheckoutRedirectAction extends \Primathonpay\MWarrior\Con
         \Psr\Log\LoggerInterface $logger,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Primathonpay\Primathonpay\Helper\Checkout $checkoutHelper
+        \Primathonpay\MWarrior\Helper\Checkout $checkoutHelper
     ) {
         parent::__construct($context, $logger, $checkoutSession, $orderFactory);
         $this->_checkoutHelper = $checkoutHelper;

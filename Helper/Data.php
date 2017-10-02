@@ -73,7 +73,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @param \Magento\Framework\App\Helper\Context $context
      * @param \Magento\Payment\Helper\Data $paymentData
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager,
-     * @param \Primathonpay\Primathonpay\Model\ConfigFactory $configFactory,
+     * @param \Primathonpay\MWarrior\Model\ConfigFactory $configFactory,
      * @param \Magento\Framework\Locale\ResolverInterface $localeResolver
      */
     public function __construct(
@@ -81,7 +81,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Payment\Helper\Data $paymentData,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Primathonpay\Primathonpay\Model\ConfigFactory $configFactory,
+        \Primathonpay\MWarrior\Model\ConfigFactory $configFactory,
         \Magento\Framework\Locale\ResolverInterface $localeResolver
     ) {
         $this->_objectManager = $objectManager;
@@ -134,7 +134,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Get an Instance of the Config Factory Class
-     * @return \Primathonpay\Primathonpay\Model\ConfigFactory
+     * @return \Primathonpay\MWarrior\Model\ConfigFactory
      */
     protected function getConfigFactory()
     {
@@ -295,7 +295,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**Get an Instance of a Method Object using the Method Code
      * @param string $methodCode
-     * @return \Primathonpay\Primathonpay\Model\Config
+     * @return \Primathonpay\MWarrior\Model\Config
      */
     public function getMethodConfig($methodCode)
     {

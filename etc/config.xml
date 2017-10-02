@@ -29,6 +29,7 @@ GNU General Public License for more details.
                 <transaction_type>payment</transaction_type>
                 <merchant_id />
                 <api_key />
+                <api_passphrase />
                 <domain_checkout />
                 <domain_gateway />
                 <can_review_payment>1</can_review_payment>

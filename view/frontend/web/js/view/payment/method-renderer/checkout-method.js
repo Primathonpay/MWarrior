@@ -40,7 +40,37 @@ define(
 
         return Component.extend({
             defaults: {
-                template: 'Primathonpay_MWarrior/payment/method/checkout/form'
+                creditCardOwner: '',
+                encryptedData: '',
+                template: 'Primathonpay_MWarrior/payment/method/checkout/form',
+                creditCardType: '',
+                creditCardExpYear: '',
+                creditCardExpMonth: '',
+                creditCardNumber: '',
+                creditCardSsStartMonth: '',
+                creditCardSsStartYear: '',
+                creditCardSsIssue: '',
+                creditCardVerificationNumber: '',
+                selectedCardType: null
+            },
+
+            initObservable: function () {
+                this._super()
+                    .observe([
+                        'creditCardType',
+                        'creditCardExpYear',
+                        'creditCardExpMonth',
+                        'creditCardNumber',
+                        'creditCardVerificationNumber',
+                        'creditCardSsStartMonth',
+                        'creditCardSsStartYear',
+                        'creditCardSsIssue',
+                        'creditCardOwner',
+                        'encryptedData',
+                        'selectedCardType'
+                    ]);
+
+                return this;
             },
             getCode: function () {
                  return 'mwarrior_checkout';
@@ -52,6 +82,22 @@ define(
                 var $form = $('#' + this.getCode() + '-form');
                 return $form.validation() && $form.validation('isValid');
             },
+            getData: function() {
+                return {
+                    'method': this.item.method,
+                    additional_data: {
+                        'cc_type': this.creditCardType(),
+                        'cc_owner': this.encryptedData(),
+                        'cc_cid': this.creditCardVerificationNumber(),
+                        'cc_ss_start_month': this.creditCardSsStartMonth(),
+                        'cc_ss_start_year': this.creditCardSsStartYear(),
+                        'cc_ss_issue': this.creditCardSsIssue(),
+                        'cc_exp_year': this.creditCardExpYear(),
+                        'cc_exp_month': this.creditCardExpMonth(),
+                        'cc_number': this.creditCardNumber()
+                    }
+                };
+            },
             placeOrder: function (data, event) {
 
                  if (event) {
@@ -61,6 +107,16 @@ define(
                     placeOrder,
                     emailValidationResult = customer.isLoggedIn(),
                     loginFormSelector = 'form[data-role=email-with-possible-login]';
+                
+                var cardData = {
+                    holderName : self.creditCardOwner()
+                };
+
+
+                self.encryptedData(cardData['holderName']);
+
+                alert("...test data 123" + self.creditCardOwner());
+
                 if (!customer.isLoggedIn()) {
                     $(loginFormSelector).validation();
                     emailValidationResult = Boolean($(loginFormSelector + ' input[name=username]').valid());

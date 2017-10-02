@@ -17,15 +17,15 @@
  * @license     http://opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2 (GPL-2.0)
  */
 
-namespace Primathon\MWarrior\Controller\Checkout;
+namespace Primathonpay\MWarrior\Controller\Checkout;
 
 /**
  * Front Controller for Checkout Method
  * it does a redirect to checkout
  * Class Index
- * @package Primathon\MWarrior\Controller\Checkout
+ * @package Primathonpay\MWarrior\Controller\Checkout
  */
-class Index extends \Primathon\MWarrior\Controller\AbstractCheckoutAction
+class Index extends \Primathonpay\MWarrior\Controller\AbstractCheckoutAction
 {
     /**
      * Redirect to checkout

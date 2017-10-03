@@ -54,10 +54,10 @@ GNU General Public License for more details.
                 <field id="active">1</field>
             </depends>
         </field>
-        <field id="api_passphrase" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+        <field id="api_passphrase" translate="label" sortOrder="33" showInDefault="1" showInWebsite="1" showInStore="0">
             <label>Api Passphrase</label>
             <config_path>payment/mwarrior_checkout/api_passphrase</config_path>
-            <validate>required-entry validate-alphanum</validate>
+            <validate>required-entry</validate>
             <can_be_empty>0</can_be_empty>
             <depends>
                 <field id="active">1</field>

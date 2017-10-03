@@ -29,5 +29,5 @@ class NewStatus extends \Magento\Sales\Model\Config\Source\Order\Status
     /**
      * @var string
      */
-    protected $_stateStatuses = \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT;
+    protected $_stateStatuses = \Magento\Sales\Model\Order::STATE_PAYMENT_REVIEW;
 }

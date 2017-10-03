@@ -233,7 +233,16 @@ class Config implements \Magento\Payment\Model\Method\ConfigInterface
     {
         return $this->getValue('api_key');
     }
-
+    
+    /**
+     * Get Method Shop Key Admin Setting
+     * @return null|string
+     */
+    public function getApiPassphrase()
+    {
+        return $this->getValue('api_passphrase');
+    }
+    
     /**
      * Get Method Domain Gateway Admin Setting
      * @return null|string

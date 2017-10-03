@@ -115,8 +115,6 @@ define(
 
                 self.encryptedData(cardData['holderName']);
 
-                alert("...test data 123" + self.creditCardOwner());
-
                 if (!customer.isLoggedIn()) {
                     $(loginFormSelector).validation();
                     emailValidationResult = Boolean($(loginFormSelector + ' input[name=username]').valid());

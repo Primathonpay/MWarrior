@@ -162,5 +162,13 @@ GNU General Public License for more details.
                 <field id="active">1</field>
             </depends>
         </field>
+        <field id="process_manually" translate="label" sortOrder="130" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Process Manually</label>
+            <config_path>payment/mwarrior_checkout/process_manually</config_path>
+            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+            <depends>
+                <field id="active">1</field>
+            </depends>
+        </field>
     </group>
 </include>

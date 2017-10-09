@@ -35,6 +35,7 @@ GNU General Public License for more details.
                 <can_review_payment>1</can_review_payment>
                 <min_order_total>0.01</min_order_total>
                 <enable_logging>0</enable_logging>
+                <process_manually>1</process_manually>
                 <allowspecific>0</allowspecific>
                 <allow_specific_currency>0</allow_specific_currency>
                 <group>mwarrior</group>

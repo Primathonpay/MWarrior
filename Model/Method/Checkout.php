@@ -22,6 +22,7 @@ use mWarrior\Settings;
 use Magento\Framework\DataObject;
 use Magento\Payment\Model\InfoInterface;
 use Magento\Quote\Api\Data\PaymentInterface;
+use \Magento\Framework\Message\ManagerInterface;
 
 /**
  * Checkout Payment Method Model Class
@@ -31,6 +32,7 @@ use Magento\Quote\Api\Data\PaymentInterface;
 class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
 {
     use \Primathonpay\MWarrior\Model\Traits\OnlinePaymentMethod;
+
 
     const CODE = 'mwarrior_checkout';
     /**
@@ -143,11 +145,16 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
         return $this->_canReviewPayment;
 
     }
-
+    
     public function acceptPayment(\Magento\Payment\Model\InfoInterface $payment)
     {
-        $amount = 0.0;
-        return $this->processTransaction($payment, $amount);
+        $isProcessManually = $this->getConfigData('process_manually');
+        if($isProcessManually && (!($isProcessManually === 1))){
+            $amount = 0.0;
+            return $this->processTransaction($payment, $amount);
+        }else{
+            return true;
+        }
     }
 
     public function assignData(\Magento\Framework\DataObject $data)
@@ -319,7 +326,7 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
             'cardExpiryYear' => $payment->getCcExpYear()
         ];
 
-//        $this->getConfigHelper()->initGatewayClient();
+        //        $this->getConfigHelper()->initGatewayClient();
 
         try {
 
@@ -378,8 +385,16 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
         
         $billing = $order->getBillingAddress();
 
+        $cardHolderName = null;
 
-        $name = str_replace('&', '&amp;', trim($billing->getFirstname())) . str_replace('&', '&amp;', trim($billing->getLastname()));
+        if (!empty($payment->getCcOwner())) {
+          $cardHolderName = $payment->getCcOwner();
+        } else {
+          $cardHolderName = $billing->getFirstname();
+        }
+
+        $product = $this->_registry->registry('current_product');
+        // $name = str_replace('&', '&amp;', trim($billing->getFirstname())) . str_replace('&', '&amp;', trim($billing->getLastname()));
         
         $postData = [
             'method' => 'processCard',
@@ -388,7 +403,7 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
             'transactionAmount' => sprintf("%.2f",$order->getGrandTotal()),
             'transactionCurrency' => 'AUD',
             'transactionProduct' => '$FOH-00100503',
-            'customerName' => $name,
+            'customerName' => $cardHolderName,
             'customerCountry' => $billing->getCountryId(),
             'customerState' => $billing->getRegion(),
             'customerCity' => $billing->getCity(),
@@ -400,12 +415,46 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
         ];
         array_push($postData,['hash' => $this->getHash($postData)]);
 
-//         $this->getConfigHelper()->initGatewayClient();
+     //         $this->getConfigHelper()->initGatewayClient();
         
         try {
 
             $responseObject = $this->processCard($postData);
+
+            $this->setMWarriorResponse(
+                $responseObject
+            );
+
+            $mwarrior_response = $this->getModuleHelper()->getArrayFromGatewayResponse(
+                $this->getMWarriorResponse()
+            );
+            
+            if($mwarrior_response === true){
+                $payment
+                    ->setLastTransId(
+                            $responseObject['transactionID']
+                        )
+                    ->setCcTransId(
+                        $responseObject['transactionID']
+                    )
+                    ->setIsTransactionClosed(
+                        false
+                    )
+                    ->setIsTransactionPending(
+                        false
+                    )
+                    ->setPaymentTransactionAdditionalInfo(
+                        $mwarrior_response
+                    );
+                return true;
+            }else{
+                $message = $responseObject['error'];
+                $this->getLogger()->error($message);
+                throw new \Magento\Framework\Exception\LocalizedException(__($message));
+                return false;
+            }
         } catch (\Exception $e) {
+            $e.$message = $responseObject['error'];
             $logInfo =
                 'Transaction Direct Payment' .
                 ' for order #' . $order->getIncrementId() .
@@ -413,39 +462,11 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
 
             $this->getLogger()->error($logInfo);
 
-            $this->getCheckoutSession()->setPrimathonpayLastCheckoutError(
-                $e->getMessage()
-            );
-
             $this->getModuleHelper()->maskException($e);
+            throw new \Magento\Framework\Exception\LocalizedException(__($message));
             return false;
         }
 
-        $this->setMWarriorResponse(
-            $responseObject
-        );
-
-        $mwarrior_response = $this->getModuleHelper()->getArrayFromGatewayResponse(
-            $this->getMWarriorResponse()
-        );
-
-        $payment
-            ->setLastTransId(
-                    $responseObject['transactionID']
-                )
-            ->setCcTransId(
-                 $responseObject['transactionID']
-            )
-            ->setIsTransactionClosed(
-                false
-            )
-            ->setIsTransactionPending(
-                false
-            )
-             ->setPaymentTransactionAdditionalInfo(
-                $mwarrior_response
-            );
-        return true;
     }
 
 
@@ -633,7 +654,7 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
         if (!isset($postData['transactionCurrency']) || !strlen($postData['transactionCurrency'])) {
              $this->getLogger()->error("Missing or blank currency field in post array.");
         }
-
+        $this->getLogger()->info("apipass" . $this->getConfigData('api_passphrase'));
         // Generate & return the hash
         $passphrase = $this->getConfigData('api_passphrase');
         $merchantUUID = $this->getConfigData('merchant_id');

@@ -222,7 +222,7 @@ class Config implements \Magento\Payment\Model\Method\ConfigInterface
      */
     public function getMerchantUUID()
     {
-        return $this->getValue('merchant_uuid');
+        return $this->getValue('merchant_id');
     }
 
     /**

@@ -149,7 +149,7 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
     public function acceptPayment(\Magento\Payment\Model\InfoInterface $payment)
     {
         $isProcessManually = $this->getConfigData('process_manually');
-        if($isProcessManually && (!($isProcessManually === 1))){
+        if($isProcessManually && ($isProcessManually === 0)){
             $amount = 0.0;
             return $this->processTransaction($payment, $amount);
         }else{
@@ -206,7 +206,7 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
 
     public function checkout($data)
     {
-        $transaction = new \primathonpay\AddCard();  // mwarrior/Addcard;
+        $transaction = new \primathonpay\Addcard();  // mwarrior/Addcard;
 
         $transaction->setMerchantUUID($data['merchantUUID']);
         $transaction->setApiKey($data['apiKey']);

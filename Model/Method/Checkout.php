@@ -92,6 +92,7 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
         \Magento\Checkout\Model\Session $checkoutSession,
         \Primathonpay\MWarrior\Helper\Data $moduleHelper,
         \Magento\Catalog\Model\ProductFactory $productFactory,
+        \Magento\Reports\Model\ResourceModel\Order\Collection $orderCollection,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
@@ -113,6 +114,7 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
         $this->_checkoutSession = $checkoutSession;
         $this->_moduleHelper = $moduleHelper;
         $this->_productFactory = $productFactory;
+        $this->_orderCollection = $orderCollection;
         $this->_configHelper =
             $this->getModuleHelper()->getMethodConfig(
                 $this->getCode()
@@ -149,7 +151,8 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
     public function acceptPayment(\Magento\Payment\Model\InfoInterface $payment)
     {
         $isProcessManually = $this->getConfigData('process_manually');
-        if($isProcessManually && ($isProcessManually === 0)){
+        $isProcessManually = (int)$isProcessManually;
+        if(($isProcessManually === 0)){
             $amount = 0.0;
             return $this->processTransaction($payment, $amount);
         }else{
@@ -206,7 +209,7 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
 
     public function checkout($data)
     {
-        $transaction = new \primathonpay\Addcard();  // mwarrior/Addcard;
+        $transaction = new \primathonpay\AddCard();  // mwarrior/Addcard;
 
         $transaction->setMerchantUUID($data['merchantUUID']);
         $transaction->setApiKey($data['apiKey']);
@@ -393,16 +396,23 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
           $cardHolderName = $billing->getFirstname();
         }
 
-        $product = $this->_registry->registry('current_product');
-        // $name = str_replace('&', '&amp;', trim($billing->getFirstname())) . str_replace('&', '&amp;', trim($billing->getLastname()));
-        
+        $orderCollection = $this->_orderCollection;
+        foreach ($orderCollection as $orderItem){
+            $items = $orderItem->getAllVisibleItems();
+            foreach($items as $item){
+                $sku = $item->getSku();
+            }
+        }
+
+        $customerIp = $order->getRemoteIp();
+
         $postData = [
             'method' => 'processCard',
             'merchantUUID' => $this->getConfigData('merchant_id'),
             'apiKey' => $this->getConfigData('api_key'),
             'transactionAmount' => sprintf("%.2f",$order->getGrandTotal()),
             'transactionCurrency' => 'AUD',
-            'transactionProduct' => '$FOH-00100503',
+            'transactionProduct' => $sku,
             'customerName' => $cardHolderName,
             'customerCountry' => $billing->getCountryId(),
             'customerState' => $billing->getRegion(),
@@ -411,11 +421,10 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
             'customerPostCode' => $billing->getPostcode(),
             'customerPhone' => $billing->getTelephone(),
             'customerEmail' => $billing->getEmail(),
+            'customerIP' => $customerIp,
             'cardId' => $payment->getToken()
         ];
         array_push($postData,['hash' => $this->getHash($postData)]);
-
-     //         $this->getConfigHelper()->initGatewayClient();
         
         try {
 
@@ -487,6 +496,7 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
         $transaction->setPostCode($data['customerPostCode']);
         $transaction->setTelephone($data['customerPhone']);
         $transaction->setEmail($data['customerEmail']);
+        $transaction->setCustomerIp($data['customerIP']);
         $transaction->setToken($data['cardId']);
         $transaction->setHash($data[0]['hash']);
 

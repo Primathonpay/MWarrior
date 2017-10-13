@@ -209,7 +209,7 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
 
     public function checkout($data)
     {
-        $transaction = new \primathonpay\AddCard();  // mwarrior/Addcard;
+        $transaction = new \primathonpay\Addcard();  // mwarrior/Addcard;
 
         $transaction->setMerchantUUID($data['merchantUUID']);
         $transaction->setApiKey($data['apiKey']);

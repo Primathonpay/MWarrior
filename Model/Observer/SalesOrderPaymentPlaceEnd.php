@@ -61,9 +61,6 @@ class SalesOrderPaymentPlaceEnd implements ObserverInterface
             case \Primathonpay\MWarrior\Model\Method\Checkout::CODE:
                 $this->updateOrderStatusToNew($payment);
                 break;
-            case \Primathonpay\MWarrior\Model\Method\Direct::CODE:
-                $this->updateOrderStatus($payment);
-                break;
             default:
                 // Payment method not implemented. Do nothing.
         }

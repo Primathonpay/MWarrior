@@ -362,16 +362,10 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
             );
 
             return $this;
-        } catch (\Exception $e) { $this->getLogger()->info("Add card method error" . $e);
-            $this->getLogger()->error(
-                $e->getMessage()
-            );
-
-            $this->getCheckoutSession()->setPrimathonpayLastCheckoutError(
-                $e->getMessage()
-            );
-
-            $this->getModuleHelper()->maskException($e);
+        } catch (\Exception $e) {
+            $errorMessage = $responseObject['error'];
+            $this->getLogger()->info("Add card method error" . $errorMessage);
+            throw new \Exception(__($errorMessage));
         }
     }
 
@@ -457,23 +451,20 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
                     );
                 return true;
             }else{
-                $message = $responseObject['error'];
-                $this->getLogger()->error($message);
-                throw new \Magento\Framework\Exception\LocalizedException(__($message));
-                return false;
+                $errorMessage = $responseObject['error'];
+                $this->getLogger()->error($errorMessage);
+                throw new \Exception(__($errorMessage));
             }
         } catch (\Exception $e) {
-            $e.$message = $responseObject['error'];
+            $errorMessage = $responseObject['error'];
             $logInfo =
                 'Transaction Direct Payment' .
                 ' for order #' . $order->getIncrementId() .
-                ' failed with message "' . $e->getMessage() . '"';
+                ' failed with message "' . $errorMessage . '"';
 
             $this->getLogger()->error($logInfo);
 
-            $this->getModuleHelper()->maskException($e);
-            throw new \Magento\Framework\Exception\LocalizedException(__($message));
-            return false;
+            throw new \Exception(__($errorMessage));
         }
 
     }
@@ -514,54 +505,98 @@ class Checkout extends \Magento\Payment\Model\Method\AbstractMethod
      * Payment refund
      *
      * @param \Magento\Payment\Model\InfoInterface $payment
-     * @param float $amount
+     * @param $amount
      * @return $this
-     * @throws \Magento\Framework\Webapi\Exception
+     * @throws Exception
      */
     public function refund(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
-        /** @var \Magento\Sales\Model\Order $order */
         $order = $payment->getOrder();
+        $refundPayment = $order->getPayment();
+        $creditmemo = $refundPayment->getCreditmemo();
+        $baseAmountToRefund = $creditmemo->getGrandTotal();
 
         $this->getLogger()->debug('Refund transaction for order #' . $order->getIncrementId());
+        $helper = $this->getModuleHelper();
 
-        $captureTransaction = $this->getModuleHelper()->lookUpCaptureTransaction(
-            $payment
-        );
-
-        if (!isset($captureTransaction)) {
-            $errorMessage = __('Refund transaction for order # %1 cannot be finished (No Capture Transaction exists)',
-                $order->getIncrementId()
-            );
-
-            $this->getLogger()->error(
-                $errorMessage
-            );
-
-            $this->getMessageManager()->addError($errorMessage);
-
-            $this->getModuleHelper()->throwWebApiException(
-                $errorMessage
-            );
-        }
-
+        $postData = [
+            'method' => 'refundCard',
+            'merchantUUID' => $this->getConfigData('merchant_id'),
+            'apiKey' => $this->getConfigData('api_key'),
+            'transactionAmount' => sprintf("%.2f",$order->getGrandTotal()),
+            'transactionCurrency' => 'AUD',
+            'transactionID' => $payment->getLastTransId(),
+            'refundAmount' => sprintf("%.2f", $baseAmountToRefund)
+        ];
+        array_push($postData,['hash' => $this->getHash($postData)]);
+        
         try {
-            $this->doRefund($payment, $amount, $captureTransaction);
+
+            $responseObject = $this->doRefund($postData);
+
+            $this->setMWarriorResponse(
+                $responseObject
+            );
+
+            $mwarrior_response = $this->getModuleHelper()->getArrayFromGatewayResponse(
+                $this->getMWarriorResponse()
+            );
+            
+            if($mwarrior_response === true){
+                $payment
+                    ->setLastTransId(
+                            $responseObject['transactionID']
+                        )
+                    ->setCcTransId(
+                        $responseObject['transactionID']
+                    )
+                    ->setIsTransactionClosed(
+                        false
+                    )
+                    ->setIsTransactionPending(
+                        false
+                    )
+                    ->setPaymentTransactionAdditionalInfo(
+                        $mwarrior_response
+                    );
+                return true;
+            }else{
+                $errorMessage = $responseObject['error'];
+                $this->getLogger()->error($errorMessage);
+                throw new \Exception(__($errorMessage));
+            }
         } catch (\Exception $e) {
-            $this->getLogger()->error(
-                $e->getMessage()
-            );
+            $errorMessage = $responseObject['error'];
+            $logInfo =
+                'Refund transaction' .
+                ' for order #' . $order->getIncrementId() .
+                ' failed with message "' . $errorMessage . '"';
 
-            $this->getMessageManager()->addError(
-                $e->getMessage()
-            );
+            $this->getLogger()->error($logInfo);
 
-            $this->getModuleHelper()->maskException($e);
+            throw new \Exception(__($errorMessage));
         }
-
-        return $this;
     }
 
+    public function doRefund($data)
+    {
+        $transaction = new \primathonpay\Refund;
+
+        $transaction->setMerchantUUID($data['merchantUUID']);
+        $transaction->setApiKey($data['apiKey']);
+        $transaction->setGrandTotal($data['transactionAmount']);
+        $transaction->setBaseCurrency($data['transactionCurrency']);
+        $transaction->setTransactionID($data['transactionID']);
+        $transaction->setRefundAmount($data['refundAmount']);
+        $transaction->setHash($data[0]['hash']);
+
+        $transaction->submit();
+        $response = $transaction->gatewayResponse();
+
+        return $this->_parseResponse($response);
+
+    }
+    
     /**
      * Payment Cancel
      * @param \Magento\Payment\Model\InfoInterface $payment

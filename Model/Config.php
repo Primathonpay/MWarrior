@@ -71,6 +71,7 @@ class Config implements \Magento\Payment\Model\Method\ConfigInterface
         \primathonpay\Settings::$merchantUUID  = $this->getMerchantUUID();
         \primathonpay\Settings::$apikey = $this->getApiKey();
         \primathonpay\Settings::$gatewayBase = 'https://' . $this->getDomainGateway();
+        \primathonpay\Settings::$checkoutBase = 'https://' . $this->getDomainCheckout();
     }
 
     /**
